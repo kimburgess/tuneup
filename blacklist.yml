@@ -1,0 +1,12 @@
+# Tracks that should probably not play on the office Sonos.
+# 
+# To prevent a track from playing, list it below as "Artist - Track Name", or
+# with any combination of artist, title, album or spotify uri.
+---
+- artist: Chris Brown
+  title: Party
+
+- artist: Tyler The Creator
+  title: Yonkers
+
+- Nickelback

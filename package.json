@@ -11,6 +11,7 @@
   "author": "Kim Burgess <kim@simple.industries",
   "license": "MIT",
   "dependencies": {
+    "js-yaml": "^3.8.4",
     "ramda": "^0.24.1",
     "sonos": "^0.15.0"
   },
