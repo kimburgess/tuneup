@@ -1,7 +1,7 @@
 {
-  "name": "rickify",
+  "name": "tuneup",
   "version": "1.0.0",
-  "description": "A spotify track monitor that will never give, or let you down",
+  "description": "A spotify track monitor that will never give you up, or let you down",
   "main": "dist/index.js",
   "scripts": {
     "prestart": "gulp build",
