@@ -1,13 +1,8 @@
 import * as fs from 'fs';
-import * as path from 'path';
 import * as yaml from 'js-yaml';
 import * as R from 'ramda';
 import * as sonos from 'sonos';
-
-const rick = 'spotify:track:4uLU6hMCjMI75M1A2tKUQC';
-
-const blacklist = loadBlacklist('../blacklist.yml');
-console.log(blacklist);
+import * as args from 'command-line-args';
 
 interface Track {
     title?: string;
@@ -16,32 +11,55 @@ interface Track {
     uri?: string;
 }
 
-function loadBlacklist(file) {
-    const filePath = path.join(__dirname, file);
-    const tracks = yaml.safeLoad(fs.readFileSync(filePath, 'utf8'));
+/**
+ * Load a yaml formatted blacklist for matching track / artistst / alibums to.
+ */
+function loadBlacklist(file: string) {
+    const load = (f: string) => yaml.safeLoad(fs.readFileSync(f, 'utf8'));
 
     // FIXME: should probably handle possible incorrect data formats here
     const convert = (t) => R.is(String, t) ? stringToTrack(t) : t;
+    const process = R.map(convert);
 
-    return R.map(convert, tracks);
+    return R.pipe(load, process)(file);
+}
+
+/**
+ * Search for all sonos players on the local network.
+ */
+function watchAllPlayers(blacklist: Track[], replacementUri: string) {
+    console.log('Searching for Sonos devices...');
+
+    const watchPlayer = watch(blacklist, replacementUri);
+
+    const search = sonos.search();
+
+    search.on('DeviceAvailable', (device, model) => {
+        console.log(`Discovered Sonos device at ${device.host}`);
+        watchPlayer(device.host, device.port);
+    });
 }
 
 /**
  * Bind to a Sonos device.
  */
-function watch(host: string, port = 1400) {
-    const player = new sonos.Sonos(host, port);
+function watch(blacklist: Track[], replacementUri: string) {
+    return (host: string, port = 1400) => {
+        console.log(`Attaching to Sonos device at ${host}`);
 
-    const isALetDown = trackInList(blacklist);
+        const player = new sonos.Sonos(host, port);
 
-    const roll = () => player.play(rick);
+        const blacklisted = trackInList(blacklist);
 
-    const neverGiveUp = R.cond([
-        [isALetDown, roll],
-        [R.T, logTrack]
-    ]);
+        const replace = () => player.play(replacementUri);
 
-    onPlaybackUpdate(player, neverGiveUp);
+        const check = R.cond([
+            [blacklisted, replace],
+            [R.T, logTrack]
+        ]);
+
+        onPlaybackUpdate(player, check);
+    };
 }
 
 /**
@@ -114,10 +132,19 @@ function trackInList(list: Track[]) {
     return (track: Track) => R.any(match(track))(list);
 }
 
-console.log('Searching for Sonos devices...');
-const search = sonos.search();
+const cliArgs = [
+    { name: 'blacklist', alias: 'b', type: String, defaultOption: true, defaultValue: 'blacklist.yml'},
+    { name: 'player', alias: 'p', type: String }
+];
+const options = args(cliArgs);
 
-search.on('DeviceAvailable', (device, model) => {
-    console.log(`Discovered Sonos device at ${device.host}`);
-    watch(device.host, device.port);
-});
+const rick = 'spotify:track:4uLU6hMCjMI75M1A2tKUQC';
+
+const blacklist = loadBlacklist(options.blacklist);
+
+const connect = R.cond([
+    [R.isEmpty,  () => watchAllPlayers(blacklist, rick)],
+    [R.T,        watch(blacklist, rick)]
+]);
+
+connect(options.player);
