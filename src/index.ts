@@ -93,11 +93,18 @@ function stringToTrack(x: string): Track {
  */
 function logTrack(track: Track, logger: (msg: string) => void = console.log) {
     logger(trackToString(track));
-    return track;
 }
 
+/**
+ * Create a predicate that will will match a partial track descriptor.
+ */
 function match(searchBase: Track) {
-    return (track: Track) => false;
+    return (queryTrack: Track) => {
+        const extract = R.pipe(R.keys, R.props)(queryTrack);
+        const lower = R.map(R.toLower);
+        const props = R.map(R.pipe(extract, lower), [queryTrack, searchBase]);
+        return R.equals(...props);
+    };
 }
 
 /**
