@@ -8,6 +8,10 @@
     "start": "node .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kimburgess/tuneup.git"
+  },
   "author": "Kim Burgess <kim@simple.industries",
   "license": "MIT",
   "dependencies": {
@@ -17,6 +21,7 @@
     "sonos": "^0.15.0"
   },
   "devDependencies": {
+    "@types/node": "^7.0.27",
     "babel-preset-env": "^1.5.1",
     "del": "^2.2.2",
     "gulp": "^3.9.1",
