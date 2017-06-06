@@ -6,7 +6,8 @@ With Docker:
 
     git clone https://github.com/KimBurgess/tuneup.git
     cd tuneup
-    ID=$(docker build .) && docker run -i -t $ID
+    docker build . -t tuneup
+    docker run -it --net=host tuneup
 
 Or, your own node invironment:
 
