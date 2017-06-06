@@ -143,7 +143,7 @@ const rick = 'spotify:track:4uLU6hMCjMI75M1A2tKUQC';
 const blacklist = loadBlacklist(options.blacklist);
 
 const connect = R.cond([
-    [R.isEmpty,  () => watchAllPlayers(blacklist, rick)],
+    [R.isNil,    () => watchAllPlayers(blacklist, rick)],
     [R.T,        watch(blacklist, rick)]
 ]);
 
